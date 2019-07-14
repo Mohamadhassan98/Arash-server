@@ -7,6 +7,3 @@ admin.site.register(License)
 admin.site.register(Arash)
 admin.site.register(Address)
 admin.site.register(Company)
-
-
-# Register your models here.

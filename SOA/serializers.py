@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from support.models import Address, User, License, Arash, Company
+from .models import Address, User, License, Arash, Company
 
 
 class AddressSerializer(serializers.ModelSerializer):
