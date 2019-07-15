@@ -1,10 +1,3 @@
-# from django.contrib.auth.base_user import AbstractBaseUser
-# from django.contrib.auth.models import AbstractUser
-# from django.db import models
-#
-#
-# class User(AbstractUser):
-#     address = models.OneToOneField(Address, on_delete=models.CASCADE, null=True, related_name='user')
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -27,7 +20,7 @@ class User(AbstractUser):
     phone = models.CharField(max_length=11)
     personnel_code = models.CharField(max_length=15)
     in_place = models.BooleanField(default=False)
-    address = models.ForeignKey(Address, on_delete=models.CASCADE, related_name='users', null=True)
+    address = models.OneToOneField(Address, on_delete=models.CASCADE, related_name='users', null=True)
 
 
 class License(models.Model):
@@ -62,4 +55,4 @@ class Request(models.Model):
     request_date = models.DateTimeField()
     solve_date = models.DateTimeField()
     arash = models.ForeignKey(Arash, on_delete=models.CASCADE, related_name='requests')
-    user = models.ManyToManyField(User, related_name='requests')
+    users = models.ManyToManyField(User, related_name='requests')

@@ -84,3 +84,12 @@ class AddCompany(APIView):
             return Response(serializer.data)
         except serializers.ValidationError as e:
             return Response(e, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AddRequest(APIView):
+    def post(self, request):
+        serializer = RequestSerializer(data=request.data)
+        if serializer.is_valid():
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
