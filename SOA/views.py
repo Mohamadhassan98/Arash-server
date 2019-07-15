@@ -1,4 +1,5 @@
 from django.contrib.auth import login
+from django.db import transaction
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -68,11 +69,18 @@ class AddLicense(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# class AddCompany(APIView):
-#     def post(self, request):
-#         serializer = CompanySerializer(data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data)
-#         else:
-#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class AddCompany(APIView):
+    @transaction.atomic
+    def post(self, request):
+        try:
+            serializer = AddressSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            address = serializer.save()
+
+            serializer = CompanySerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save(address=address)
+            return Response(serializer.data)
+        except serializers.ValidationError as e:
+            return Response(e, status=status.HTTP_400_BAD_REQUEST)
