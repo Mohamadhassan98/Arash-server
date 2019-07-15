@@ -8,6 +8,6 @@ urlpatterns = [
     path('user/<int:id>/', GetUser.as_view()),
     path('add/arash/', AddArash.as_view()),
     path('add/license/', AddLicense.as_view()),
-    # path('add/company/', AddCompany.as_view())
+    path('add/company/', AddCompany.as_view())
 
 ]
