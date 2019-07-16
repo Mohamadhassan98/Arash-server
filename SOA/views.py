@@ -25,11 +25,9 @@ class Login(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request):
-        print('start')
         username = request.data['username']
         password = request.data['password']
         user = User.objects.filter(username=username)
-        print(user[0])
         if user.count() == 1:
             if user[0].check_password(password):
                 login(request, user[0])
@@ -47,6 +45,35 @@ class AddArash(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# noinspection PyMethodMayBeStatic
+class ArashOperations(APIView):
+    def delete(self, pk):
+        try:
+            Arash.objects.get(pk=pk).delete()
+            return Response(status=status.HTTP_200_OK)
+        except Arash.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+    def get(self, pk):
+        try:
+            arash = Arash.objects.get(pk=pk)
+            serializer = ArashSerializer(arash)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Arash.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+    def put(self, request, pk):
+        try:
+            arash = Arash.objects.get(pk=pk)
+            serializer = ArashSerializer(arash, request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Arash.DoesNotExist or serializers.ValidationError as e:
+            return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
+
+
+# noinspection PyMethodMayBeStatic
 class AddLicense(APIView):
     def post(self, request):
         serializer = LicenseSerializer(data=request.data)
@@ -64,7 +91,6 @@ class AddCompany(APIView):
             serializer = AddressSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             address = serializer.save()
-
             serializer = CompanySerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             serializer.save(address=address)
