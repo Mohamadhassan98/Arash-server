@@ -37,19 +37,6 @@ class Login(APIView):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
-class GetUser(APIView):
-    permission_classes = []
-
-    def get(self, request, id):
-        try:
-            user = User.objects.get(id=id)
-            serializer = UserSerializer(user)
-            login(user=user, request=request)
-            return Response(serializer.data)
-        except User.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-
 class AddArash(APIView):
     def post(self, request):
         serializer = ArashSerializer(data=request.data)
@@ -86,6 +73,7 @@ class AddCompany(APIView):
             return Response(e, status=status.HTTP_400_BAD_REQUEST)
 
 
+# noinspection PyMethodMayBeStatic
 class AddRequest(APIView):
     def post(self, request):
         serializer = RequestSerializer(data=request.data)
@@ -93,3 +81,28 @@ class AddRequest(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class Profile(APIView):
+    def put(self, request, pk):
+        try:
+            user = User.objects.get(pk)
+            if request.user.pk != pk:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            else:
+                data = request.data
+                serializer = UserSerializer(user, data=data, partial=True)
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        except User.DoesNotExist or serializers.ValidationError as e:
+            return Response(e.details, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request, pk):
+        try:
+            user = User.objects.get(id=pk)
+            serializer = UserSerializer(user)
+            login(user=user, request=request)
+            return Response(serializer.data)
+        except User.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
