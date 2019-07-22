@@ -8,7 +8,7 @@ class Address(models.Model):
     alley = models.CharField(max_length=15, null=True)
     postal_code = models.CharField(max_length=10)
     plaque = models.CharField(max_length=10)
-    phone = models.CharField(max_length=11)
+    tel_phone = models.CharField(max_length=11)
     fax = models.CharField(max_length=11, null=True)
     details = models.CharField(max_length=100, null=True)
 
@@ -21,7 +21,12 @@ class User(AbstractUser):
     personnel_code = models.CharField(max_length=15)
     in_place = models.BooleanField(default=False)
     address = models.OneToOneField(Address, on_delete=models.CASCADE, related_name='users', null=True)
+    user_status = [
+        ('ad', 'admin'),
+        ('ma', 'master')
 
+    ]
+    status = models.CharField(max_length=2, choices=user_status, default='ad')
 
 class License(models.Model):
     # boolean Fields for features

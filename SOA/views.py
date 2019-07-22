@@ -1,7 +1,9 @@
 from django.contrib.auth import login
+from django.contrib.auth.decorators import user_passes_test, login_required
 from django.db import transaction
+from django.utils.decorators import method_decorator
 from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -10,15 +12,38 @@ from .serializers import *
 
 # noinspection PyMethodMayBeStatic
 class Signup(APIView):
-    permission_classes = (AllowAny,)
-
-    def post(self, request):
-        serializer = UserSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
+    def is_master_admin(user):
+        if user.status == 'ma':
+            return True
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return False
+
+    @method_decorator(login_required, name='dispatch')
+    @method_decorator(user_passes_test(is_master_admin), name='dispatch')
+    @transaction.atomic
+    def post(self, request):
+        try:
+            with transaction.atomic():
+                data = request.data
+                print(data)
+                address_serializer = AddressSerializer(data=data['address'])
+                if address_serializer.is_valid():
+                    address_serializer.save()
+                else:
+                    return Response(address_serializer.errors)
+
+                data['address'] = address_serializer.data['id']
+
+                user_serializer = UserSerializer(data=data)
+                if user_serializer.is_valid():
+                    user_serializer.save()
+                else:
+                    return Response(user_serializer.errors)
+
+                return Response(user_serializer.data)
+
+        except serializers.ValidationError as e:
+            return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
 
 
 # noinspection PyMethodMayBeStatic
@@ -36,6 +61,9 @@ class Login(APIView):
                 return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
+    def get(self, request):
+        # when i write signup if the user is not master this url is required(it maybe need some change later)
+        return Response("you are admin user can not access signup")
 
 # noinspection PyMethodMayBeStatic
 class AddArash(APIView):
@@ -155,6 +183,7 @@ class AddLicense(APIView):
 
 
 class AddCompany(APIView):
+    permission_classes = [IsAuthenticated, ]
     @transaction.atomic
     def post(self, request):
         try:
@@ -162,12 +191,15 @@ class AddCompany(APIView):
                 serializer = AddressSerializer(data=request.data)
                 serializer.is_valid(raise_exception=True)
                 address = serializer.save()
+                request.data._mutable = True
+                request.data.update({'address': address.id})
                 serializer = CompanySerializer(data=request.data)
                 serializer.is_valid(raise_exception=True)
-                serializer.save(address=address)
+                serializer.save()
+                # serializer.save(address=address)
                 return Response(serializer.data)
         except serializers.ValidationError as e:
-            return Response(e, status=status.HTTP_400_BAD_REQUEST)
+            return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
 
 
 # noinspection PyMethodMayBeStatic
