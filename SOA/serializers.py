@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 
 from django.utils.timezone import now
 from rest_framework import serializers
@@ -14,6 +15,7 @@ def validate_phone_numbers(phone):
     return phone
 
 
+# noinspection PyMethodMayBeStatic
 class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
@@ -41,6 +43,7 @@ class AddressSerializer(serializers.ModelSerializer):
         return validate_phone_numbers(fax)
 
 
+# noinspection PyMethodMayBeStatic
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -52,10 +55,23 @@ class UserSerializer(serializers.ModelSerializer):
         password = validated_data.pop('password')
         return User.objects.create_user(username=username, password=password, **validated_data)
 
+    def update(self, instance: User, validated_data) -> User:
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.email = validated_data.get('email', instance.email)
+        instance.phone = validated_data.get('phone', instance.phone)
+        if 'password' in validated_data:
+            instance.set_password(validated_data['password'])
+        instance.personnel_code = validated_data.get('personnel_code', instance.personnel_code)
+        instance.in_place = validated_data.get('in_place', instance.in_place)
+        instance.save()
+        return instance
+
     def validate_phone(self, phone):
         return validate_phone_numbers(phone)
 
 
+# noinspection PyMethodMayBeStatic
 class LicenseSerializer(serializers.ModelSerializer):
     class Meta:
         model = License
@@ -76,13 +92,24 @@ class ArashSerializer(serializers.ModelSerializer):
 class CompanySerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
-        exclude = ('address',)
+        # fields = ('id', 'name', 'email', 'address')
+        exclude = ('company_code',)
+
+    def create(self, validated_data):
+        print(validated_data)
+        str1 = datetime.now()
+        str2 = str1.strftime("%m/%d/%Y")
+        str3 = validated_data['name']
+        company = Company.objects.filter(name=str3)
+        if company.count() != 0:
+            str4 = company.count() + 1
+            return Company.objects.create(company_code=str2 + str3 + str(str4), **validated_data)
+
+        else:
+            return Company.objects.create(company_code=str2 + str3 + '0', **validated_data)
 
 
 class RequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Request
-        exclude = ('arash', 'users')
-
-    def create(self, validated_data) -> Request:
-        pass
+        fields = '__all__'
