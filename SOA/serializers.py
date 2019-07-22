@@ -98,3 +98,9 @@ class RequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Request
         fields = '__all__'
+
+
+class LogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Log
+        fields = '__all__'

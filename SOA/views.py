@@ -39,21 +39,28 @@ class Login(APIView):
 
 # noinspection PyMethodMayBeStatic
 class AddArash(APIView):
+    @transaction.atomic
     def post(self, request):
-        serializer = ArashSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            with transaction.atomic():
+                serializer = ArashSerializer(data=request.data)
+                serializer.is_valid(raise_exception=True)
+                arash = serializer.save()
+                Log.objects.create(operation='+', operand='Arash', operand_object=arash.pk, user=request.user)
+                return Response(serializer.data)
+        except serializers.ValidationError as e:
+            return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
 
 
 # noinspection PyMethodMayBeStatic
 class ArashOperations(APIView):
-    def delete(self, pk):
+    @transaction.atomic
+    def delete(self, request, pk):
         try:
-            Arash.objects.get(pk=pk).delete()
-            return Response(status=status.HTTP_200_OK)
+            with transaction.atomic():
+                Arash.objects.get(pk=pk).delete()
+                Log.objects.create(operation='-', operand='Arash', operand_object=pk, user=request.user)
+                return Response(status=status.HTTP_200_OK)
         except Arash.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -65,13 +72,22 @@ class ArashOperations(APIView):
         except Arash.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
+    @transaction.atomic
     def put(self, request, pk):
         try:
-            arash = Arash.objects.get(pk=pk)
-            serializer = ArashSerializer(arash, request.data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            with transaction.atomic():
+                arash = Arash.objects.get(pk=pk)
+                serializer = ArashSerializer(arash, request.data, partial=True)
+                serializer.is_valid(raise_exception=True)
+                fields = serializer.validated_data()
+                old_fields = []
+                for key, _ in fields:
+                    old_fields.append(getattr(arash, key))
+                serializer.save()
+                log = Log(operation='*', operand='Arash', user=request.user, operand_object=pk)
+                log.edit_fields(old_fields, fields)
+                log.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
         except Arash.DoesNotExist or serializers.ValidationError as e:
             return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
 
@@ -86,20 +102,32 @@ class CompanyOperations(APIView):
         except Company.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-    def delete(self, pk):
+    @transaction.atomic
+    def delete(self, request, pk):
         try:
-            Company.objects.get(pk=pk).delete()
-            return Response(status=status.HTTP_200_OK)
+            with transaction.atomic():
+                Company.objects.get(pk=pk).delete()
+                Log.objects.create(operation='-', operand='Company', user=request.user, operand_object=pk)
+                return Response(status=status.HTTP_200_OK)
         except Company.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
+    @transaction.atomic
     def put(self, request, pk):
         try:
-            company = Company.objects.get(pk=pk)
-            serializer = CompanySerializer(company, request.data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            with transaction.atomic():
+                company = Company.objects.get(pk=pk)
+                serializer = CompanySerializer(company, request.data, partial=True)
+                serializer.is_valid(raise_exception=True)
+                fields = serializer.validated_data()
+                old_fields = []
+                for key, _ in fields:
+                    old_fields.append(getattr(company, key))
+                serializer.save()
+                log = Log(operation='*', operand='Company', user=request.user, operand_object=pk)
+                log.edit_fields(old_fields, fields)
+                log.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
         except Company.DoesNotExist or serializers.ValidationError as e:
             return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
 
@@ -107,6 +135,7 @@ class CompanyOperations(APIView):
 # noinspection PyMethodMayBeStatic
 class AddRequest(APIView):
     def post(self, request):
+        # TODO('Logger, to be or not to be!')
         serializer = RequestSerializer(data=request.data)
         if serializer.is_valid():
             request = serializer.save()
@@ -117,6 +146,7 @@ class AddRequest(APIView):
 
 # noinspection PyMethodMayBeStatic
 class RequestOperations(APIView):
+    # TODO('Logger, to be or not to be!')
     def get(self, pk):
         try:
             request = Request.objects.get(pk=pk)
@@ -145,13 +175,58 @@ class RequestOperations(APIView):
 
 # noinspection PyMethodMayBeStatic
 class AddLicense(APIView):
+    @transaction.atomic
     def post(self, request):
-        serializer = LicenseSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            with transaction.atomic():
+                serializer = LicenseSerializer(data=request.data)
+                serializer.is_valid(raise_exception=True)
+                license_object = serializer.save()
+                Log.objects.create(operation='+', operand='License', user=request.user,
+                                   operand_object=license_object.id)
+                return Response(serializer.data)
+        except serializers.ValidationError as e:
+            return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
+
+
+# noinspection PyMethodMayBeStatic
+class LicenseOperations(APIView):
+    def get(self, pk):
+        try:
+            license_object = License.objects.get(pk=pk)
+            serializer = LicenseSerializer(instance=license_object)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except License.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+    @transaction.atomic
+    def delete(self, request, pk):
+        try:
+            with transaction.atomic():
+                License.objects.get(pk=pk).delete()
+                Log.objects.create(operation='-', operand='License', operand_object=pk, user=request.user)
+                return Response(status=status.HTTP_200_OK)
+        except License.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+    @transaction.atomic
+    def put(self, request, pk):
+        try:
+            with transaction.atomic():
+                license_object = License.objects.get(pk=pk)
+                serializer = LicenseSerializer(license_object, request.data, partial=True)
+                serializer.is_valid(raise_exception=True)
+                fields = serializer.validated_data()
+                old_fields = []
+                for key, _ in fields:
+                    old_fields.append(getattr(license_object, key))
+                serializer.save()
+                log = Log(operation='*', operand='License', user=request.user, operand_object=pk)
+                log.edit_fields(old_fields, fields)
+                log.save()
+                return Response(status=status.HTTP_200_OK)
+        except serializers.ValidationError or License.DoesNotExist as e:
+            return Response(e.details, status=status.HTTP_400_BAD_REQUEST)
 
 
 class AddCompany(APIView):
@@ -164,7 +239,8 @@ class AddCompany(APIView):
                 address = serializer.save()
                 serializer = CompanySerializer(data=request.data)
                 serializer.is_valid(raise_exception=True)
-                serializer.save(address=address)
+                company = serializer.save(address=address)
+                Log.objects.create(operation='+', operand='Company', operand_object=company.id, user=request.user)
                 return Response(serializer.data)
         except serializers.ValidationError as e:
             return Response(e, status=status.HTTP_400_BAD_REQUEST)
@@ -192,5 +268,25 @@ class Profile(APIView):
             serializer = UserSerializer(user)
             login(user=user, request=request)
             return Response(serializer.data)
+        except User.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+# noinspection PyMethodMayBeStatic
+class GetLog(APIView):
+    def get(self, request, pk):
+        try:
+            user = User.objects.get(pk=pk)
+            params = request.GET
+            _from = 0
+            _to = 10
+            if 'from' in params.keys:
+                _from = params['from']
+                _to = params['to']
+            logs = Log.objects.filter(user=user)[_from:_to]
+            serializer = LogSerializer(logs, many=True)
+            if not serializer.data:
+                return Response({'error: ': 'No logs found!'}, status=status.HTTP_404_NOT_FOUND)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
