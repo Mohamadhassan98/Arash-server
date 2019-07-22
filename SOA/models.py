@@ -70,11 +70,11 @@ class Log(models.Model):
     operand_object = models.IntegerField()
     date = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    fields = models.CharField(max_length=256, null=True)
+    fields = models.TextField(null=True)
 
     def edit_fields(self, old, new):
         fields = 'field names: '
-        for field_name, _ in new:
+        for field_name, _ in new.items():
             fields += '%s, ' % field_name
         fields = fields[:-2]
         fields += '; old values: '
@@ -82,7 +82,7 @@ class Log(models.Model):
             fields += '%s, ' % field
         fields = fields[:-2]
         fields += '; new values: '
-        for _, field in new:
+        for _, field in new.items():
             fields += '%s, ' % field
         fields = fields[:-2]
         fields += ';'

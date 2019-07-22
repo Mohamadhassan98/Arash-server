@@ -52,7 +52,7 @@ class AddArash(APIView):
             return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
 
 
-# noinspection PyMethodMayBeStatic
+# noinspection PyMethodMayBeStatic, PyUnusedLocal
 class ArashOperations(APIView):
     @transaction.atomic
     def delete(self, request, pk):
@@ -64,7 +64,7 @@ class ArashOperations(APIView):
         except Arash.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-    def get(self, pk):
+    def get(self, request, pk):
         try:
             arash = Arash.objects.get(pk=pk)
             serializer = ArashSerializer(arash)
@@ -81,7 +81,7 @@ class ArashOperations(APIView):
                 serializer.is_valid(raise_exception=True)
                 fields = serializer.validated_data()
                 old_fields = []
-                for key, _ in fields:
+                for key, _ in fields.items():
                     old_fields.append(getattr(arash, key))
                 serializer.save()
                 log = Log(operation='*', operand='Arash', user=request.user, operand_object=pk)
@@ -92,9 +92,9 @@ class ArashOperations(APIView):
             return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
 
 
-# noinspection PyMethodMayBeStatic
+# noinspection PyMethodMayBeStatic, PyUnusedLocal
 class CompanyOperations(APIView):
-    def get(self, pk):
+    def get(self, request, pk):
         try:
             company = Company.objects.get(pk=pk)
             serializer = CompanySerializer(instance=company)
@@ -119,9 +119,9 @@ class CompanyOperations(APIView):
                 company = Company.objects.get(pk=pk)
                 serializer = CompanySerializer(company, request.data, partial=True)
                 serializer.is_valid(raise_exception=True)
-                fields = serializer.validated_data()
+                fields = serializer.validated_data
                 old_fields = []
-                for key, _ in fields:
+                for key, _ in fields.items():
                     old_fields.append(getattr(company, key))
                 serializer.save()
                 log = Log(operation='*', operand='Company', user=request.user, operand_object=pk)
@@ -144,10 +144,10 @@ class AddRequest(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# noinspection PyMethodMayBeStatic
+# noinspection PyMethodMayBeStatic, PyUnusedLocal
 class RequestOperations(APIView):
     # TODO('Logger, to be or not to be!')
-    def get(self, pk):
+    def get(self, request, pk):
         try:
             request = Request.objects.get(pk=pk)
             serializer = RequestSerializer(instance=request)
@@ -189,9 +189,9 @@ class AddLicense(APIView):
             return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
 
 
-# noinspection PyMethodMayBeStatic
+# noinspection PyMethodMayBeStatic, PyUnusedLocal
 class LicenseOperations(APIView):
-    def get(self, pk):
+    def get(self, request, pk):
         try:
             license_object = License.objects.get(pk=pk)
             serializer = LicenseSerializer(instance=license_object)
@@ -218,7 +218,7 @@ class LicenseOperations(APIView):
                 serializer.is_valid(raise_exception=True)
                 fields = serializer.validated_data()
                 old_fields = []
-                for key, _ in fields:
+                for key, _ in fields.items():
                     old_fields.append(getattr(license_object, key))
                 serializer.save()
                 log = Log(operation='*', operand='License', user=request.user, operand_object=pk)
@@ -243,7 +243,7 @@ class AddCompany(APIView):
                 Log.objects.create(operation='+', operand='Company', operand_object=company.id, user=request.user)
                 return Response(serializer.data)
         except serializers.ValidationError as e:
-            return Response(e, status=status.HTTP_400_BAD_REQUEST)
+            return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
 
 
 # noinspection PyMethodMayBeStatic
@@ -280,7 +280,8 @@ class GetLog(APIView):
             params = request.GET
             _from = 0
             _to = 10
-            if 'from' in params.keys:
+            print(params)
+            if 'from' in params:
                 _from = params['from']
                 _to = params['to']
             logs = Log.objects.filter(user=user)[_from:_to]
