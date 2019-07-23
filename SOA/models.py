@@ -48,7 +48,11 @@ class Arash(models.Model):
     expire_date = models.DateField()
     version = models.CharField(max_length=10)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='arashes')
-    purchase_date = models.DateField(default=datetime.now)
+    purchase_date = models.DateField(default=datetime.date.today)
+
+    @property
+    def is_active(self):
+        return datetime.date.today() < self.expire_date
 
     class Meta:
         verbose_name_plural = 'arashes'
