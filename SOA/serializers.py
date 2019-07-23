@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 
 from django.utils.timezone import now
 from rest_framework import serializers
@@ -47,18 +48,11 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         exclude = ('is_superuser', 'is_staff', 'date_joined', 'last_login', 'groups', 'user_permissions', 'is_active')
-        # depth = 1
 
     def create(self, validated_data) -> User:
-        print(validated_data)
         username = validated_data.pop('username')
         password = validated_data.pop('password')
         return User.objects.create_user(username=username, password=password, **validated_data)
-
-    # def validate(self, attrs):
-    #     print('attrs')
-    #     print(attrs)
-    #     return attrs
 
     def update(self, instance: User, validated_data) -> User:
         instance.first_name = validated_data.get('first_name', instance.first_name)
@@ -69,7 +63,6 @@ class UserSerializer(serializers.ModelSerializer):
             instance.set_password(validated_data['password'])
         instance.personnel_code = validated_data.get('personnel_code', instance.personnel_code)
         instance.in_place = validated_data.get('in_place', instance.in_place)
-        instance.status = validated_data.get('status', instance.status)
         instance.save()
         return instance
 
@@ -98,7 +91,21 @@ class ArashSerializer(serializers.ModelSerializer):
 class CompanySerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
-        fields = '__all__'
+        # fields = ('id', 'name', 'email', 'address')
+        exclude = ('company_code',)
+
+    def create(self, validated_data):
+        print(validated_data)
+        str1 = datetime.now()
+        str2 = str1.strftime("%m/%d/%Y")
+        str3 = validated_data['name']
+        company = Company.objects.filter(name=str3)
+        if company.count() != 0:
+            str4 = company.count() + 1
+            return Company.objects.create(company_code=str2 + str3 + str(str4), **validated_data)
+
+        else:
+            return Company.objects.create(company_code=str2 + str3 + '0', **validated_data)
 
 
 class RequestSerializer(serializers.ModelSerializer):

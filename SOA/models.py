@@ -43,7 +43,6 @@ class Company(models.Model):
 
 
 class Arash(models.Model):
-    private_key = models.CharField(max_length=256)
     public_key = models.CharField(max_length=256)
     serial_number = models.CharField(max_length=16)
     license = models.OneToOneField(License, on_delete=models.CASCADE, related_name='arash')

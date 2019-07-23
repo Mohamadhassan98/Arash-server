@@ -41,3 +41,6 @@ At least I found out that I should use quoted names in order not to let psql to 
 done. 😊😊
 The experience was about Installing postgresql 11.4 on windows 10 pro version 1903.
 Wrote on 1398/04/24, all rights reserved😁😁"
+
+[faezeeaghabozorgi]in signup url when it go to userserializer the field address was none just because depth=1 used in
+ serializer so there was no address field anymore to use and it is so logical😊😊.
