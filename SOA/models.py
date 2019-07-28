@@ -1,3 +1,5 @@
+import datetime
+
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -28,10 +30,6 @@ class User(AbstractUser):
     ]
     status = models.CharField(max_length=2, choices=user_status, default='ad')
 
-class License(models.Model):
-    # boolean Fields for features
-    expire_date = models.DateField()
-
 
 class Company(models.Model):
     name = models.CharField(max_length=10)
@@ -43,12 +41,18 @@ class Company(models.Model):
 
 
 class Arash(models.Model):
-    private_key = models.CharField(max_length=256)
+    features = ['features']
     public_key = models.CharField(max_length=256)
     serial_number = models.CharField(max_length=16)
-    license = models.OneToOneField(License, on_delete=models.CASCADE, related_name='arash')
+    license = models.CharField(max_length=256)
+    expire_date = models.DateField()
     version = models.CharField(max_length=10)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='arashes')
+    purchase_date = models.DateField(default=datetime.date.today)
+
+    @property
+    def is_active(self):
+        return datetime.date.today() < self.expire_date
 
     class Meta:
         verbose_name_plural = 'arashes'

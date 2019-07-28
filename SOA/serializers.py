@@ -48,18 +48,11 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         exclude = ('is_superuser', 'is_staff', 'date_joined', 'last_login', 'groups', 'user_permissions', 'is_active')
-        # depth = 1
 
     def create(self, validated_data) -> User:
-        print(validated_data)
         username = validated_data.pop('username')
         password = validated_data.pop('password')
         return User.objects.create_user(username=username, password=password, **validated_data)
-
-    # def validate(self, attrs):
-    #     print('attrs')
-    #     print(attrs)
-    #     return attrs
 
     def update(self, instance: User, validated_data) -> User:
         instance.first_name = validated_data.get('first_name', instance.first_name)
@@ -70,7 +63,6 @@ class UserSerializer(serializers.ModelSerializer):
             instance.set_password(validated_data['password'])
         instance.personnel_code = validated_data.get('personnel_code', instance.personnel_code)
         instance.in_place = validated_data.get('in_place', instance.in_place)
-        instance.status = validated_data.get('status', instance.status)
         instance.save()
         return instance
 
