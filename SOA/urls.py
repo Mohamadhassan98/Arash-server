@@ -11,7 +11,8 @@ urlpatterns = [
     path('add/company/', AddCompany.as_view()),
     path('add/request/', AddRequest.as_view()),
     path('user/<int:pk>/', Profile.as_view()),
+    path('user/<int:pk>/logs/', GetLog.as_view()),
     path('company/<int:pk>/', CompanyOperations.as_view()),
     path('request/<int:pk>/', RequestOperations.as_view()),
-    path('arash/<int:pk>/', ArashOperations.as_view())
+    path('arash/<int:pk>/', ArashOperations.as_view()),
 ]

@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 
 from django.utils.timezone import now
 from rest_framework import serializers
@@ -98,10 +99,30 @@ class ArashSerializer(serializers.ModelSerializer):
 class CompanySerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
-        fields = '__all__'
+        # fields = ('id', 'name', 'email', 'address')
+        exclude = ('company_code',)
+
+    def create(self, validated_data):
+        print(validated_data)
+        str1 = datetime.now()
+        str2 = str1.strftime("%m/%d/%Y")
+        str3 = validated_data['name']
+        company = Company.objects.filter(name=str3)
+        if company.count() != 0:
+            str4 = company.count() + 1
+            return Company.objects.create(company_code=str2 + str3 + str(str4), **validated_data)
+
+        else:
+            return Company.objects.create(company_code=str2 + str3 + '0', **validated_data)
 
 
 class RequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Request
+        fields = '__all__'
+
+
+class LogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Log
         fields = '__all__'
