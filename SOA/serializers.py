@@ -1,7 +1,6 @@
 import re
 from datetime import datetime
 
-from django.utils.timezone import now
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -68,18 +67,6 @@ class UserSerializer(serializers.ModelSerializer):
 
     def validate_phone(self, phone):
         return validate_phone_numbers(phone)
-
-
-# noinspection PyMethodMayBeStatic
-class LicenseSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = License
-        fields = '__all__'
-
-    def validate_expire_date(self, expire_date):
-        if expire_date < now:
-            raise ValidationError('expire_date should be in the future')
-        return expire_date
 
 
 class ArashSerializer(serializers.ModelSerializer):

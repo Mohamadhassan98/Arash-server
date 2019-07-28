@@ -4,10 +4,8 @@ from .views import *
 
 urlpatterns = [
     path('signup/', Signup.as_view()),
-    path('accounts/login/', Login.as_view()),
-    path('login/', Login.as_view()),
+    path('accounts/login/', Login.as_view(), name='login'),
     path('add/arash/', AddArash.as_view()),
-    path('add/license/', AddLicense.as_view()),
     path('add/company/', AddCompany.as_view()),
     path('add/request/', AddRequest.as_view()),
     path('user/<int:pk>/', Profile.as_view()),

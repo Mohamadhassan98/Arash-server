@@ -12,11 +12,9 @@ from .serializers import *
 
 # noinspection PyMethodMayBeStatic
 class Signup(APIView):
+    @staticmethod
     def is_master_admin(user):
-        if user.status == 'ma':
-            return True
-        else:
-            return False
+        return user.status == 'ma'
 
     @method_decorator(login_required, name='dispatch')
     @method_decorator(user_passes_test(is_master_admin), name='dispatch')
@@ -25,23 +23,18 @@ class Signup(APIView):
         try:
             with transaction.atomic():
                 data = request.data
-                print(data)
                 address_serializer = AddressSerializer(data=data['address'])
                 if address_serializer.is_valid():
                     address_serializer.save()
                 else:
                     return Response(address_serializer.errors)
-
                 data['address'] = address_serializer.data['id']
-
                 user_serializer = UserSerializer(data=data)
                 if user_serializer.is_valid():
                     user_serializer.save()
                 else:
                     return Response(user_serializer.errors)
-
                 return Response(user_serializer.data)
-
         except serializers.ValidationError as e:
             return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
 
@@ -64,6 +57,7 @@ class Login(APIView):
     def get(self, request):
         # when i write signup if the user is not master this url is required(it maybe need some change later)
         return Response("you are admin user can not access signup")
+
 
 # noinspection PyMethodMayBeStatic
 class AddArash(APIView):
@@ -202,63 +196,9 @@ class RequestOperations(APIView):
 
 
 # noinspection PyMethodMayBeStatic
-class AddLicense(APIView):
-    @transaction.atomic
-    def post(self, request):
-        try:
-            with transaction.atomic():
-                serializer = LicenseSerializer(data=request.data)
-                serializer.is_valid(raise_exception=True)
-                license_object = serializer.save()
-                Log.objects.create(operation='+', operand='License', user=request.user,
-                                   operand_object=license_object.id)
-                return Response(serializer.data)
-        except serializers.ValidationError as e:
-            return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
-
-
-# noinspection PyMethodMayBeStatic, PyUnusedLocal
-class LicenseOperations(APIView):
-    def get(self, request, pk):
-        try:
-            license_object = License.objects.get(pk=pk)
-            serializer = LicenseSerializer(instance=license_object)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except License.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-    @transaction.atomic
-    def delete(self, request, pk):
-        try:
-            with transaction.atomic():
-                License.objects.get(pk=pk).delete()
-                Log.objects.create(operation='-', operand='License', operand_object=pk, user=request.user)
-                return Response(status=status.HTTP_200_OK)
-        except License.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-    @transaction.atomic
-    def put(self, request, pk):
-        try:
-            with transaction.atomic():
-                license_object = License.objects.get(pk=pk)
-                serializer = LicenseSerializer(license_object, request.data, partial=True)
-                serializer.is_valid(raise_exception=True)
-                fields = serializer.validated_data()
-                old_fields = []
-                for key, _ in fields.items():
-                    old_fields.append(getattr(license_object, key))
-                serializer.save()
-                log = Log(operation='*', operand='License', user=request.user, operand_object=pk)
-                log.edit_fields(old_fields, fields)
-                log.save()
-                return Response(status=status.HTTP_200_OK)
-        except serializers.ValidationError or License.DoesNotExist as e:
-            return Response(e.details, status=status.HTTP_400_BAD_REQUEST)
-
-
 class AddCompany(APIView):
     permission_classes = [IsAuthenticated, ]
+
     @transaction.atomic
     def post(self, request):
         try:
