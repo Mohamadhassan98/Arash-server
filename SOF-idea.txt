@@ -1,11 +1,43 @@
----------------------- Welcome --------------------------------
-| Please append your suggestion and experience. At first look |   
-| at the sample please, then start it.                        |
-|                                                             |
-| sample:                                                     |
-| ["majid iranpour"]: "I think change password is good idea". |
-|                                                             |
-|                                                             |
-| Thanks for attation.                                        |
-| Are you ready??                                             |
----------------------------------------------------------------
+-------------------------------------------------------- Welcome -------------------------------------------------------
+| Please append your suggestions and experiences. At first look at the sample please, then start it.                   |
+|                                                                                                                      |
+| sample:                                                                                                              |
+| ["majid iranpour"]: "I think change password is good idea."                                                          |
+|                                                                                                                      |
+|                                                                                                                      |
+| Thanks for attention.                                                                                                |
+| Are you ready??                                                                                                      |
+------------------------------------------------------------------------------------------------------------------------
+
+["Mohamadhassan Ebrahimi"]: "Installing postgresql on windows: First of all, don't make my mistake. If there is an
+unworking version of postgres in your system, don't hesitate to fully remove it first. (I had installed another version
+before, and reinstalled the Windows afterward...). After installing, get ready to endure some pain!!💊💊
+There are some aspects to cover here. First of all, postgresql saves the "postgres" user's password in a file here in
+this address: %AppData%/postgresql/pgpass.conf This password is the root password of your database. Postgres will ask
+you for this password when installing postgres. (Not in my case, when I reinstalled on a pre-installed version, as it
+was using previous configurations, but no file in AppData and I had no idea where I am going to find the password).
+You should add postgres installation path (bin folder in PostgreSQL/<version>) to your environment variables of windows,
+in order to use psql (and probably more useful commands) exactly in CMD.
+I had a problem using psql command, as it used my Username as postgresql user and required password but neither my
+windows password nor postgres user password worked here.
+After lots of search, I found out that there is another conf file in PostgreSQL/data folder called pg_hba.conf that
+handles users and how they are authenticated in postgres. There was a suggestion that you change every pre-configured
+methods with 'trust' (while there were a warning in another site that this is not safe to do). I did this and after that
+I had to restart postgresql service from services.msc (If you encountered "The postgresql-x64-9.6 service on local
+computer started and then stopped. Some services stop automatically if they are not in use by other services or
+programs.", then you had configured pg_hba.conf wrong...). Now I was able to use psql with postgres (root) user (psql -U
+postgres) and do SQL, but it was not convenient (You should use -U postgres every time and yet it's not safe as it's
+like doing every command with sudo privileges in linux). I did some search and finally found this useful commands:
+DROP USER username; -- DROP the windows user first as you haven't its password...
+CREATE ROLE username LOGIN PASSWORD 'password goes here'; -- recreate the user you've just dropped
+Yet you have to create a database exactly with the name of the user...
+CREATE DATABASE username;
+ALTER DATABASE username OWNER TO username; -- changing database owner to username
+Now you may be able to use psql without any options, but for me that was not all. My username starts with Uppercase M
+and I didn't know that SQL codes within psql command are lowercased all (The names are case-sensitive but the jerk makes
+them lowercased!!😒😒) Imagine... I tried to login but it said that database Mohamadhassan does not exist and when I
+tried to Create it with postgres (CREATE DATABASE Mohamadhassan) it said database mohamadhassan already exists! WTF?😲😲
+At least I found out that I should use quoted names in order not to let psql to lowercase it and it was successfully
+done. 😊😊
+The experience was about Installing postgresql 11.4 on windows 10 pro version 1903.
+Wrote on 1398/04/24, all rights reserved😁😁"

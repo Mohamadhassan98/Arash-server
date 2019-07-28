@@ -56,3 +56,34 @@ class Request(models.Model):
     solve_date = models.DateTimeField()
     arash = models.ForeignKey(Arash, on_delete=models.CASCADE, related_name='requests')
     users = models.ManyToManyField(User, related_name='requests')
+
+
+class Log(models.Model):
+    OPERATIONS = (
+        ('+', 'Add'),
+        ('-', 'Remove'),
+        ('*', 'Update')
+    )
+
+    operation = models.CharField(max_length=1, choices=OPERATIONS)
+    operand = models.CharField(max_length=20)
+    operand_object = models.IntegerField()
+    date = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    fields = models.TextField(null=True)
+
+    def edit_fields(self, old, new):
+        fields = 'field names: '
+        for field_name, _ in new.items():
+            fields += '%s, ' % field_name
+        fields = fields[:-2]
+        fields += '; old values: '
+        for field in old:
+            fields += '%s, ' % field
+        fields = fields[:-2]
+        fields += '; new values: '
+        for _, field in new.items():
+            fields += '%s, ' % field
+        fields = fields[:-2]
+        fields += ';'
+        self.fields = fields
