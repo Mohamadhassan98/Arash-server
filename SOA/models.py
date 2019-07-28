@@ -26,7 +26,6 @@ class User(AbstractUser):
     user_status = [
         ('ad', 'admin'),
         ('ma', 'master')
-
     ]
     status = models.CharField(max_length=2, choices=user_status, default='ad')
 

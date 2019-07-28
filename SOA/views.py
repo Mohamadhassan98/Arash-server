@@ -12,11 +12,9 @@ from .serializers import *
 
 # noinspection PyMethodMayBeStatic
 class Signup(APIView):
+    @staticmethod
     def is_master_admin(user):
-        if user.status == 'ma':
-            return True
-        else:
-            return False
+        return user.status == 'ma'
 
     @method_decorator(login_required, name='dispatch')
     @method_decorator(user_passes_test(is_master_admin), name='dispatch')
@@ -25,23 +23,18 @@ class Signup(APIView):
         try:
             with transaction.atomic():
                 data = request.data
-                print(data)
                 address_serializer = AddressSerializer(data=data['address'])
                 if address_serializer.is_valid():
                     address_serializer.save()
                 else:
                     return Response(address_serializer.errors)
-
                 data['address'] = address_serializer.data['id']
-
                 user_serializer = UserSerializer(data=data)
                 if user_serializer.is_valid():
                     user_serializer.save()
                 else:
                     return Response(user_serializer.errors)
-
                 return Response(user_serializer.data)
-
         except serializers.ValidationError as e:
             return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
 
@@ -64,6 +57,7 @@ class Login(APIView):
     def get(self, request):
         # when i write signup if the user is not master this url is required(it maybe need some change later)
         return Response("you are admin user can not access signup")
+
 
 # noinspection PyMethodMayBeStatic
 class AddArash(APIView):
@@ -172,18 +166,9 @@ class RequestOperations(APIView):
 
 
 # noinspection PyMethodMayBeStatic
-class AddLicense(APIView):
-    def post(self, request):
-        serializer = LicenseSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 class AddCompany(APIView):
     permission_classes = [IsAuthenticated, ]
+
     @transaction.atomic
     def post(self, request):
         try:
