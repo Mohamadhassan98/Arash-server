@@ -1,3 +1,5 @@
+from threading import Thread
+
 from django.contrib.auth import login
 from django.contrib.auth.decorators import user_passes_test, login_required
 from django.db import transaction
@@ -69,12 +71,13 @@ class AddArash(APIView):
                 serializer.is_valid(raise_exception=True)
                 arash = serializer.save()
                 Log.objects.create(operation='+', operand='Arash', operand_object=arash.pk, user=request.user)
+                Thread()
                 return Response(serializer.data)
         except serializers.ValidationError as e:
             return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
 
 
-# noinspection PyMethodMayBeStatic, PyUnusedLocal
+# noinspection PyMethodMayBeStatic, PyUnusedLocal, DuplicatedCode
 class ArashOperations(APIView):
     @transaction.atomic
     def delete(self, request, pk):
@@ -114,7 +117,7 @@ class ArashOperations(APIView):
             return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
 
 
-# noinspection PyMethodMayBeStatic, PyUnusedLocal
+# noinspection PyMethodMayBeStatic, PyUnusedLocal, DuplicatedCode
 class CompanyOperations(APIView):
     def get(self, request, pk):
         try:
