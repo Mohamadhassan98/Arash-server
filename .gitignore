@@ -131,3 +131,4 @@ Arash_project/__pycache__/
 SOA/__pycache__/
 SOA/migrations/__pycache__/
 SOA/migrations
+SOAConnection/migrations
