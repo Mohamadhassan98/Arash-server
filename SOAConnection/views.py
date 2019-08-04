@@ -2,6 +2,8 @@ import random
 import string
 from datetime import datetime
 
+from Crypto.PublicKey import RSA
+from OpenSSL import crypto
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -55,3 +57,18 @@ class GetRandom(APIView):
                 information_serializer.save()
                 return Response(rand, status=status.HTTP_200_OK)
             return Response("data is invalid", status=status.HTTP_400_BAD_REQUEST)
+
+
+class VerifySingnature():
+
+    def verify_signature(signature: bytes, raw_message: bytes, public_key: str) -> bool:
+        public_key = RSA.importKey(public_key)
+        print(public_key)
+        certificate = crypto.X509()
+
+        certificate.set_pubkey(pub_key)
+        try:
+            crypto.verify(certificate, signature, raw_message, digest='SHA256')
+            return True
+        except:
+            return False
