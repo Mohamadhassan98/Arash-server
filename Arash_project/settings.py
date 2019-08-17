@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 
+from corsheaders.defaults import default_headers
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -38,16 +40,18 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'SOA.apps.SoaConfig',
     'SOAConnection.apps.SoaconnectionConfig',
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 REST_FRAMEWORK = {
@@ -89,6 +93,9 @@ DATABASES = {
         'PASSWORD': 'arash_1234',
         'HOST': '127.0.0.1',
         'PORT': '5432',
+    },
+    'mongodb': {
+
     }
 }
 
@@ -130,3 +137,14 @@ AUTH_USER_MODEL = 'SOA.User'
 
 STATIC_URL = '/static/'
 LOGIN_URL = 'login'
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True
+# CORS_ORIGIN_REGEX_WHITELIST = [
+#     r"^http://localhost:3000",
+# ]
+
+# CORS_ALLOW_HEADERS = list(default_headers) + [
+#     'authorization',
+#     'x-csrftoken',
+# ]
+# SESSION_COOKIE_SAMESITE = None

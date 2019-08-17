@@ -1,11 +1,8 @@
-from threading import Thread
-
 from django.contrib.auth import login
-from django.contrib.auth.decorators import user_passes_test, login_required
 from django.db import transaction
-from django.utils.decorators import method_decorator
 from rest_framework import status
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.generics import ListAPIView
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -14,30 +11,32 @@ from .serializers import *
 
 # noinspection PyMethodMayBeStatic
 class Signup(APIView):
-    @staticmethod
-    def is_master_admin(user):
-        return user.status == 'ma'
+    # fixme
+    # for testing frontend purposes Only
+    authentication_classes = []
+    permission_classes = (AllowAny,)
 
-    @method_decorator(login_required, name='dispatch')
-    @method_decorator(user_passes_test(is_master_admin), name='dispatch')
+    # @staticmethod
+    # def is_master_admin(user):
+    #     return user.status == 'ma'
+    #
+    # @method_decorator(login_required, name='dispatch')
+    # @method_decorator(user_passes_test(is_master_admin), name='dispatch')
     @transaction.atomic
     def post(self, request):
         try:
             with transaction.atomic():
                 data = request.data
                 address_serializer = AddressSerializer(data=data['address'])
-                if address_serializer.is_valid():
-                    address_serializer.save()
-                else:
-                    return Response(address_serializer.errors)
+                address_serializer.is_valid(raise_exception=True)
+                address_serializer.save()
                 data['address'] = address_serializer.data['id']
                 user_serializer = UserSerializer(data=data)
-                if user_serializer.is_valid():
-                    user_serializer.save()
-                else:
-                    return Response(user_serializer.errors)
+                user_serializer.is_valid(raise_exception=True)
+                user_serializer.save()
                 return Response(user_serializer.data)
         except serializers.ValidationError as e:
+            print(e.detail)
             return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -53,7 +52,8 @@ class Login(APIView):
         if user.count() == 1:
             if user[0].check_password(password):
                 login(request, user[0])
-                return Response(status=status.HTTP_200_OK)
+                serializer = UserLoginSerializer(instance=user[0])
+                return Response(serializer.data)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     def get(self, request):
@@ -63,17 +63,27 @@ class Login(APIView):
 
 # noinspection PyMethodMayBeStatic
 class AddArash(APIView):
+    # fixme
+    # for testing frontend purposes Only
+    authentication_classes = []
+    permission_classes = (AllowAny,)
+
     @transaction.atomic
     def post(self, request):
         try:
             with transaction.atomic():
+                print(request.data)
                 serializer = ArashSerializer(data=request.data)
                 serializer.is_valid(raise_exception=True)
                 arash = serializer.save()
+                print(arash)
                 Log.objects.create(operation='+', operand='Arash', operand_object=arash.pk, user=request.user)
-                Thread()
+                # Thread()
+                print('string2')
                 return Response(serializer.data)
         except serializers.ValidationError as e:
+            print('string')
+            print(e.detail)
             return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -115,6 +125,24 @@ class ArashOperations(APIView):
                 return Response(serializer.data, status=status.HTTP_200_OK)
         except Arash.DoesNotExist or serializers.ValidationError as e:
             return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GetCompanies(ListAPIView):
+    # fixme
+    # for testing frontend purposes Only
+    authentication_classes = []
+    permission_classes = (AllowAny,)
+    queryset = Company.objects.all()
+    serializer_class = CompanySerializer
+
+
+class GetArashes(ListAPIView):
+    # fixme
+    # for testing frontend purposes Only
+    authentication_classes = []
+    permission_classes = (AllowAny,)
+    serializer_class = ArashSerializer
+    queryset = Arash.objects.all()
 
 
 # noinspection PyMethodMayBeStatic, PyUnusedLocal, DuplicatedCode
@@ -200,31 +228,42 @@ class RequestOperations(APIView):
 
 # noinspection PyMethodMayBeStatic
 class AddCompany(APIView):
-    permission_classes = [IsAuthenticated, ]
+    # permission_classes = [IsAuthenticated, ]
+    # fixme
+    # for testing frontend purposes Only
+    authentication_classes = []
+    permission_classes = (AllowAny,)
 
     @transaction.atomic
     def post(self, request):
         try:
             with transaction.atomic():
-                serializer = AddressSerializer(data=request.data)
+                serializer = AddressSerializer(data=request.data['address'])
                 serializer.is_valid(raise_exception=True)
                 address = serializer.save()
-                request.data._mutable = True
+                # request.data._mutable = True
                 request.data.update({'address': address.id})
                 serializer = CompanySerializer(data=request.data)
                 serializer.is_valid(raise_exception=True)
-                company = serializer.save(address=address)
-                Log.objects.create(operation='+', operand='Company', operand_object=company.id, user=request.user)
+                company = serializer.save()
+                # Log.objects.create(operation='+', operand='Company', operand_object=company.id, user=request.user)
                 return Response(serializer.data)
         except serializers.ValidationError as e:
+            print(e.detail)
             return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
 
 
 # noinspection PyMethodMayBeStatic
 class Profile(APIView):
+    # fixme
+    # for testing frontend purposes Only
+    authentication_classes = []
+    permission_classes = (AllowAny,)
+
     def put(self, request, pk):
         try:
-            user = User.objects.get(pk)
+            print(request.data)
+            user = User.objects.get(pk=pk)
             if request.user.pk != pk:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
             else:
@@ -238,9 +277,10 @@ class Profile(APIView):
 
     def get(self, request, pk):
         try:
+            if request.user.id != pk:
+                return Response(status=status.HTTP_401_UNAUTHORIZED)
             user = User.objects.get(id=pk)
             serializer = UserSerializer(user)
-            login(user=user, request=request)
             return Response(serializer.data)
         except User.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)

@@ -10,7 +10,7 @@ class Address(models.Model):
     alley = models.CharField(max_length=15, null=True)
     postal_code = models.CharField(max_length=10)
     plaque = models.CharField(max_length=10)
-    tel_phone = models.CharField(max_length=11)
+    tel_phone = models.CharField(max_length=11)  # fixme("Change name to telephone")
     fax = models.CharField(max_length=11, null=True)
     details = models.CharField(max_length=100, null=True)
 
@@ -75,10 +75,10 @@ class Log(models.Model):
 
     operation = models.CharField(max_length=1, choices=OPERATIONS)
     operand = models.CharField(max_length=20)
-    operand_object = models.IntegerField()
+    operand_object = models.IntegerField()  # fixme("May not be needed")
     date = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    fields = models.TextField(null=True)
+    fields = models.TextField(null=True)  # fixme("Change it to details")
 
     def edit_fields(self, old, new):
         fields = 'field names: '
