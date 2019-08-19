@@ -77,7 +77,7 @@ class AddArash(APIView):
                 serializer.is_valid(raise_exception=True)
                 arash = serializer.save()
                 print(arash)
-                Log.objects.create(operation='+', operand='Arash', operand_object=arash.pk, user=request.user)
+                # Log.objects.create(operation='+', operand='Arash', operand_object=arash.pk, user=request.user)
                 # Thread()
                 print('string2')
                 return Response(serializer.data)
@@ -89,12 +89,17 @@ class AddArash(APIView):
 
 # noinspection PyMethodMayBeStatic, PyUnusedLocal, DuplicatedCode
 class ArashOperations(APIView):
+    # fixme
+    # for testing frontend purposes Only
+    authentication_classes = []
+    permission_classes = (AllowAny,)
+
     @transaction.atomic
     def delete(self, request, pk):
         try:
             with transaction.atomic():
                 Arash.objects.get(pk=pk).delete()
-                Log.objects.create(operation='-', operand='Arash', operand_object=pk, user=request.user)
+                # Log.objects.create(operation='-', operand='Arash', operand_object=pk, user=request.user)
                 return Response(status=status.HTTP_200_OK)
         except Arash.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
@@ -114,14 +119,14 @@ class ArashOperations(APIView):
                 arash = Arash.objects.get(pk=pk)
                 serializer = ArashSerializer(arash, request.data, partial=True)
                 serializer.is_valid(raise_exception=True)
-                fields = serializer.validated_data()
-                old_fields = []
-                for key, _ in fields.items():
-                    old_fields.append(getattr(arash, key))
+                # fields = serializer.validated_data()
+                # old_fields = []
+                # for key, _ in fields.items():
+                #     old_fields.append(getattr(arash, key))
                 serializer.save()
-                log = Log(operation='*', operand='Arash', user=request.user, operand_object=pk)
-                log.edit_fields(old_fields, fields)
-                log.save()
+                # log = Log(operation='*', operand='Arash', user=request.user, operand_object=pk)
+                # log.edit_fields(old_fields, fields)
+                # log.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
         except Arash.DoesNotExist or serializers.ValidationError as e:
             return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
@@ -147,10 +152,15 @@ class GetArashes(ListAPIView):
 
 # noinspection PyMethodMayBeStatic, PyUnusedLocal, DuplicatedCode
 class CompanyOperations(APIView):
+    # fixme
+    # for testing frontend purposes Only
+    authentication_classes = []
+    permission_classes = (AllowAny,)
+
     def get(self, request, pk):
         try:
             company = Company.objects.get(pk=pk)
-            serializer = CompanySerializer(instance=company)
+            serializer = GetCompanySerializer(instance=company)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Company.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
@@ -160,7 +170,7 @@ class CompanyOperations(APIView):
         try:
             with transaction.atomic():
                 Company.objects.get(pk=pk).delete()
-                Log.objects.create(operation='-', operand='Company', user=request.user, operand_object=pk)
+                # Log.objects.create(operation='-', operand='Company', user=request.user, operand_object=pk)
                 return Response(status=status.HTTP_200_OK)
         except Company.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
@@ -170,18 +180,24 @@ class CompanyOperations(APIView):
         try:
             with transaction.atomic():
                 company = Company.objects.get(pk=pk)
+                address = company.address
+                address_serializer = AddressSerializer(address, request.data['address'])
+                address_serializer.is_valid(raise_exception=True)
+                address_serializer.save()
+                request.data.pop('address')
                 serializer = CompanySerializer(company, request.data, partial=True)
                 serializer.is_valid(raise_exception=True)
-                fields = serializer.validated_data
-                old_fields = []
-                for key, _ in fields.items():
-                    old_fields.append(getattr(company, key))
+                # fields = serializer.validated_data
+                # old_fields = []
+                # for key, _ in fields.items():
+                #     old_fields.append(getattr(company, key))
                 serializer.save()
-                log = Log(operation='*', operand='Company', user=request.user, operand_object=pk)
-                log.edit_fields(old_fields, fields)
-                log.save()
+                # log = Log(operation='*', operand='Company', user=request.user, operand_object=pk)
+                # log.edit_fields(old_fields, fields)
+                # log.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
         except Company.DoesNotExist or serializers.ValidationError as e:
+            print(e)
             return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -288,6 +304,11 @@ class Profile(APIView):
 
 # noinspection PyMethodMayBeStatic
 class GetLog(APIView):
+    # fixme
+    # for testing frontend purposes Only
+    authentication_classes = []
+    permission_classes = (AllowAny,)
+
     def get(self, request, pk):
         try:
             user = User.objects.get(pk=pk)

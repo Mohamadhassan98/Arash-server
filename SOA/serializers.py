@@ -101,6 +101,13 @@ class CompanySerializer(serializers.ModelSerializer):
     #         return Company.objects.create(company_code=str2 + str3 + '0', **validated_data)
 
 
+class GetCompanySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Company
+        fields = ('id', 'name', 'email', 'address')
+        depth = 1
+
+
 class RequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Request
