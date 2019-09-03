@@ -14,5 +14,7 @@ urlpatterns = [
     path('company/<int:pk>/', CompanyOperations.as_view()),
     path('request/<int:pk>/', RequestOperations.as_view()),
     path('arash/<int:pk>/', ArashOperations.as_view()),
-    path('company/<int:pk>/arashes/', GetArashes.as_view())
+    path('company/<int:pk>/arashes/', GetArashes.as_view()),
+    path('user-img/<int:pk>/', UserImage.as_view()),
+    path('users/', GetUsers.as_view())
 ]

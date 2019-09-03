@@ -40,7 +40,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'SOA.apps.SoaConfig',
     'SOAConnection.apps.SoaconnectionConfig',
-    'corsheaders'
+    'corsheaders',
+    'background_task',
+    'django_mongoengine'
 ]
 
 MIDDLEWARE = [
@@ -84,6 +86,18 @@ WSGI_APPLICATION = 'Arash_project.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
+
+
+MONGODB_DATABASES = {
+    'mongo': {
+        'ENGINE': 'djongo',
+        'NAME': 'localhost',
+        'USER': 'myadmin',
+        'PASSWORD': '1234',
+        'HOST': '127.0.0.1',
+        'PORT': 27017,
+    }
+}
 
 DATABASES = {
     'default': {
@@ -139,12 +153,5 @@ STATIC_URL = '/static/'
 LOGIN_URL = 'login'
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
-# CORS_ORIGIN_REGEX_WHITELIST = [
-#     r"^http://localhost:3000",
-# ]
-
-# CORS_ALLOW_HEADERS = list(default_headers) + [
-#     'authorization',
-#     'x-csrftoken',
-# ]
-# SESSION_COOKIE_SAMESITE = None
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'

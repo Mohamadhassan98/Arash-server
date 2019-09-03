@@ -13,6 +13,13 @@ def validate_phone_numbers(phone):
     return phone
 
 
+def validate_mobile_numbers(phone):
+    regex = r'^09\d{9}'
+    if not re.search(regex, phone):
+        raise ValidationError('phone must be an 11 digit number')
+    return phone
+
+
 # noinspection PyMethodMayBeStatic
 class AddressSerializer(serializers.ModelSerializer):
     class Meta:
@@ -38,13 +45,16 @@ class AddressSerializer(serializers.ModelSerializer):
         return validate_phone_numbers(phone)
 
     def validate_fax(self, fax):
+        if fax == '':
+            return fax
         return validate_phone_numbers(fax)
 
 
 class UserLoginSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'id', 'first_name', 'last_name', 'email', 'phone', 'personnel_code', 'status', 'address']
+        fields = ['username', 'id', 'first_name', 'last_name', 'email', 'phone', 'personnel_code', 'is_superuser',
+                  'address', 'in_place']
         depth = 1
 
 
@@ -52,7 +62,7 @@ class UserLoginSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        exclude = ('is_superuser', 'is_staff', 'date_joined', 'last_login', 'groups', 'user_permissions', 'is_active')
+        exclude = ('is_staff', 'date_joined', 'last_login', 'groups', 'user_permissions', 'is_active', 'profile_pic')
 
     def create(self, validated_data) -> User:
         username = validated_data.pop('username')
@@ -64,6 +74,7 @@ class UserSerializer(serializers.ModelSerializer):
         instance.last_name = validated_data.get('last_name', instance.last_name)
         instance.email = validated_data.get('email', instance.email)
         instance.phone = validated_data.get('phone', instance.phone)
+        instance.is_superuser = validated_data.get('is_superuser', instance.is_superuser)
         if 'password' in validated_data:
             instance.set_password(validated_data['password'])
         instance.personnel_code = validated_data.get('personnel_code', instance.personnel_code)
@@ -72,7 +83,7 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
 
     def validate_phone(self, phone):
-        return validate_phone_numbers(phone)  # TODO("Check for 09 instead of 0")
+        return validate_mobile_numbers(phone)
 
 
 class ArashSerializer(serializers.ModelSerializer):

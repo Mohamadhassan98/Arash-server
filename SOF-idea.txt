@@ -44,3 +44,47 @@ Wrote on 1398/04/24, all rights reserved😁😁"
 
 [faezeeaghabozorgi]in signup url when it go to userserializer the field address was none just because depth=1 used in
  serializer so there was no address field anymore to use and it is so logical😊😊.
+
+
+ [ "Zahra Ghaedi"]: Hello! this is about "ssl certificate error", I added a ssh key to my gitlab account by using gitlab documentation but
+  when I tried to connect my pycharm project to gitlab I saw this error:ssl certificate error, I searched a lot and tried many wayes people suggested
+  but they did not work. finally I used command below in my git bash and turn off sslverify :)))
+  $ git config --global http.sslVerify false
+
+  [ "Zahra Ghaedi"]:How to use multiple database in a django project???
+  hi! to answer this question we have to know that what is the second database???
+  You can read django document and use database routing but
+  if you want to use mongoDB database with another databases such as postgreSql or Sqlite, the best offer is to use mongo-engine.
+  first of all you have to download mongoDB from its website and install it then  add 'mongo' to your system  environment.if you want to have an authorization with username and password,
+  use command below to create an admin:
+  $ mongo admin
+  > db.createUser({ user: "myadmin", pwd: "1234", roles: ["userAdminAnyDatabase"] })
+  then run MongoDB Compass Community and click on new connection. Hostname is'localhost' and mongo use port number 27017 as default.
+  from Authentication dropdown list choose Username/Password and enter username and password that you just created. Set a favorite name and dont change another settings. then click on connect.
+  In your pycharm project terminal install mongo-engine with this command:
+  $ pip install mongoengine
+  then write these codes above your models.py:
+
+  from mongoengine import *
+  connect('tumblelog')
+
+  then in your settings.py file write this:
+  MONGODB_DATABASES = {
+    'mongo': {
+        'ENGINE': 'djongo',
+        'NAME': 'localhost',
+        'USER': 'myadmin',
+        'PASSWORD': '1234',
+        'HOST': '127.0.0.1',
+        'PORT': 27017,
+    }
+}
+and add 'django_mongoengine' to your INSTALLED-APPS.
+in your models.py the model that you want to work with mongoDB does not inherit from models.Model. it must inherits from Document.
+for example:
+
+class test_1(Document):
+    author = StringField( max_length=255)
+
+after makemigration command , migrate your app.
+congratulations!!! everything is done!!!
