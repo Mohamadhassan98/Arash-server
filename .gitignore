@@ -132,3 +132,8 @@ SOA/__pycache__/
 SOA/migrations/__pycache__/
 SOA/migrations
 SOAConnection/migrations
+.idea/.gitignore
+.idea/dataSources.xml
+media/Mohamad.jpg
+media/photo2637121151539718129.jpg
+ngrok.exe

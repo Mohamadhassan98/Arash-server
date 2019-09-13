@@ -24,11 +24,11 @@ class Token(models.Model):
 
 
 class ArashVersion(models.Model):
-    version = models.CharField(max_length=15)
+    version = models.CharField(max_length=16)
     time = models.DateField()
     file = models.CharField(max_length=256)
 
 
 class AliveRequest(Document):
-    date_time = models.DateTimeField(default=datetime.now())
-    public_key = models.CharField(max_length=256)
+    date_time = fields.DateTimeField(default=datetime.now())
+    public_key = fields.StringField(max_length=1024)

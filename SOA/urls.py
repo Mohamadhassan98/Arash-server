@@ -16,5 +16,7 @@ urlpatterns = [
     path('arash/<int:pk>/', ArashOperations.as_view()),
     path('company/<int:pk>/arashes/', GetArashes.as_view()),
     path('user-img/<int:pk>/', UserImage.as_view()),
-    path('users/', GetUsers.as_view())
+    path('users/', GetUsers.as_view()),
+    path('user/', GetProfile.as_view()),
+    path('logout/', LogOut.as_view())
 ]

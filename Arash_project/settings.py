@@ -26,7 +26,7 @@ SECRET_KEY = 'mk4)jwa82=d*50$&_8&(i_dj4+a14b&grow-fqizf=zy=3@w48'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -40,16 +40,16 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'SOA.apps.SoaConfig',
     'SOAConnection.apps.SoaconnectionConfig',
-    'corsheaders',
+    # 'corsheaders',
     'background_task',
     'django_mongoengine'
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
+    # 'corsheaders.middleware.CorsMiddleware',
+    # 'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -77,9 +77,9 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-            ],
-        },
-    },
+            ]
+        }
+    }
 ]
 
 WSGI_APPLICATION = 'Arash_project.wsgi.application'
@@ -95,7 +95,7 @@ MONGODB_DATABASES = {
         'USER': 'myadmin',
         'PASSWORD': '1234',
         'HOST': '127.0.0.1',
-        'PORT': 27017,
+        'PORT': 27017
     }
 }
 
@@ -107,9 +107,6 @@ DATABASES = {
         'PASSWORD': 'arash_1234',
         'HOST': '127.0.0.1',
         'PORT': '5432',
-    },
-    'mongodb': {
-
     }
 }
 
@@ -151,7 +148,22 @@ AUTH_USER_MODEL = 'SOA.User'
 
 STATIC_URL = '/static/'
 LOGIN_URL = 'login'
-CORS_ORIGIN_ALLOW_ALL = True
-CORS_ALLOW_CREDENTIALS = True
+# CORS_ORIGIN_REGEX_WHITELIST = (
+#     r'http://localhost:3000/*'
+# )
+# CORS_ALLOW_HEADERS = (
+#     'x-requested-with',
+#     'content-type',
+#     'accept',
+#     'origin',
+#     'authorization',
+#     'x-csrftoken',
+#     'cache',
+#     'cookie',
+#     'Access-Control-Allow-Origin'
+# )
+# CORS_ORIGIN_ALLOW_ALL = True
+# CORS_ALLOW_CREDENTIALS = True
+# SESSION_COOKIE_SAMESITE = None
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'

@@ -34,8 +34,7 @@ class Company(models.Model):
     name = models.CharField(max_length=10)
     address = models.OneToOneField(Address, on_delete=models.CASCADE, related_name='company')
     email = models.EmailField(max_length=25)
-
-    # TODO merge Company_code
+    company_code = models.CharField(max_length=25, default='CompanyCode')
 
     class Meta:
         verbose_name_plural = 'companies'
@@ -66,10 +65,10 @@ class Arash(models.Model):
                 self.save()
 
     def modify_status(self, last_request):
-        mins = (datetime.datetime.now() - last_request).total_seconds() // 3600
-        if mins > 30:
+        minutes = (datetime.datetime.now() - last_request).total_seconds() // 60
+        if minutes > 2:
             self.status = 'dead'
-        elif mins > 5:
+        elif minutes > 1:
             self.status = 'dng'
         else:
             self.status = 'alv'

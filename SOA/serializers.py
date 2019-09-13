@@ -50,12 +50,18 @@ class AddressSerializer(serializers.ModelSerializer):
         return validate_phone_numbers(fax)
 
 
-class UserLoginSerializer(serializers.ModelSerializer):
+class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['username', 'id', 'first_name', 'last_name', 'email', 'phone', 'personnel_code', 'is_superuser',
                   'address', 'in_place']
         depth = 1
+
+
+class UserLoginSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'is_superuser']
 
 
 # noinspection PyMethodMayBeStatic
@@ -95,27 +101,25 @@ class ArashSerializer(serializers.ModelSerializer):
 class CompanySerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
-        fields = ('id', 'name', 'email', 'address')
-        # exclude = ('company_code',)
+        exclude = ('company_code',)
 
-    # def create(self, validated_data):
-    #     print(validated_data)
-    #
-    #     str1 = date.now()
-    #     str2 = str1.strftime("%m/%d/%Y")
-    #     str3 = validated_data['name']
-    #     company = Company.objects.filter(name=str3)
-    #     if company.count() != 0:
-    #         str4 = company.count() + 1
-    #         return Company.objects.create(company_code=str2 + str3 + str(str4), **validated_data)
-    #     else:
-    #         return Company.objects.create(company_code=str2 + str3 + '0', **validated_data)
+    def create(self, validated_data):
+        from datetime import datetime
+        str1 = datetime.now()
+        str2 = str1.strftime("%m/%d/%Y")
+        str3 = validated_data['name']
+        company = Company.objects.filter(name=str3)
+        if company.count() != 0:
+            str4 = company.count() + 1
+            return Company.objects.create(company_code=str2 + str3 + str(str4), **validated_data)
+        else:
+            return Company.objects.create(company_code=str2 + str3 + '0', **validated_data)
 
 
 class GetCompanySerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
-        fields = ('id', 'name', 'email', 'address')
+        fields = '__all__'
         depth = 1
 
 
